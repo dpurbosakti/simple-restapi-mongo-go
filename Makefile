@@ -7,4 +7,11 @@ mongostart:
 mongostop:
 		docker stop mongodb
 
-.PHONY: mongorun mongostart mongostop
+mongoexec:
+		docker exec -it mongodb bash
+## to run mongo cli simply type mongosh
+
+test:
+		go test ./... -v
+
+.PHONY: mongorun mongostart mongostop mongoexec test
