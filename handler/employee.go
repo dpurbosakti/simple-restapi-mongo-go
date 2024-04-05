@@ -1,8 +1,13 @@
 package handler
 
 import (
+	"encoding/json"
+	"log"
 	"net/http"
+	"restapi-mongo/model"
+	"restapi-mongo/repository"
 
+	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -15,7 +20,39 @@ type Response struct {
 	Error string `json:"error,omitempty"`
 }
 
-func (hdl *EmployeeHandler) CreateEmployee(w http.ResponseWriter, r *http.Request)     {}
+func (hdl *EmployeeHandler) CreateEmployee(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
+	res := &Response{}
+	defer json.NewEncoder(w).Encode(res)
+
+	var emp model.Employee
+
+	err := json.NewDecoder(r.Body).Decode(&emp)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("invalid body", err)
+		res.Error = err.Error()
+		return
+	}
+
+	emp.ID = uuid.NewString()
+
+	repo := repository.EmployeeRepo{MongoCollection: hdl.MongoCollection}
+
+	insertID, err := repo.InsertEmployee(&emp)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("insert error")
+		res.Error = err.Error()
+		return
+	}
+
+	res.Data = emp.ID
+	w.WriteHeader(http.StatusOK)
+
+	log.Println("employee inserted with id ", insertID, emp)
+}
 func (hdl *EmployeeHandler) GetEmployeeByID(w http.ResponseWriter, r *http.Request)    {}
 func (hdl *EmployeeHandler) GetAllEmployee(w http.ResponseWriter, r *http.Request)     {}
 func (hdl *EmployeeHandler) UpdateEmployee(w http.ResponseWriter, r *http.Request)     {}
