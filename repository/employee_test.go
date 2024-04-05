@@ -49,7 +49,7 @@ func TestMongoOperation(t *testing.T) {
 	// emp2 := uuid.New().String()
 
 	// connect to collection
-	coll := mongoTestClient.Database("companydb").Collection("employee_test")
+	coll := mongoTestClient.Database(os.Getenv("DB_NAME")).Collection(os.Getenv("DB_COLLECTION"))
 
 	empRepo := EmployeeRepo{MongoCollection: coll}
 
