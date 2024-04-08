@@ -8,6 +8,7 @@ import (
 	"restapi-mongo/repository"
 
 	"github.com/google/uuid"
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -59,8 +60,20 @@ func (hdl *EmployeeHandler) GetEmployeeByID(w http.ResponseWriter, r *http.Reque
 	res := &Response{}
 	defer json.NewEncoder(w).Encode(res)
 
-	empID
+	empID := mux.Vars(r)["id"]
+	log.Println("employee id ", empID)
 
+	repo := repository.EmployeeRepo{MongoCollection: hdl.MongoCollection}
+	emp, err := repo.FindEmployeeByID(empID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("error:", err)
+		res.Error = err.Error()
+		return
+	}
+
+	res.Data = emp
+	w.WriteHeader(http.StatusOK)
 }
 func (hdl *EmployeeHandler) GetAllEmployee(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "application/json")
