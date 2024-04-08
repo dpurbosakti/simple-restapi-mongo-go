@@ -95,6 +95,52 @@ func (hdl *EmployeeHandler) GetAllEmployee(w http.ResponseWriter, r *http.Reques
 	res.Data = emp
 	w.WriteHeader(http.StatusOK)
 }
-func (hdl *EmployeeHandler) UpdateEmployee(w http.ResponseWriter, r *http.Request)     {}
-func (hdl *EmployeeHandler) DeleteEmployeeByID(w http.ResponseWriter, r *http.Request) {}
-func (hdl *EmployeeHandler) DeleteAllEmployee(w http.ResponseWriter, r *http.Request)  {}
+func (hdl *EmployeeHandler) UpdateEmployee(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
+	res := &Response{}
+	defer json.NewEncoder(w).Encode(res)
+
+	empID := mux.Vars(r)["id"]
+	log.Println("employee id ", empID)
+
+	if empID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("invalid employee id")
+		res.Error = "invalid employee id"
+		return
+	}
+
+	var emp model.Employee
+
+	err := json.NewDecoder(r.Body).Decode(&emp)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("invalid body", err)
+		res.Error = err.Error()
+		return
+	}
+
+	emp.ID = empID
+
+	repo := repository.EmployeeRepo{MongoCollection: hdl.MongoCollection}
+
+	count, err := repo.UpdateEmployeeByID(empID, &emp)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("error: ", err)
+		res.Error = err.Error()
+		return
+	}
+
+	res.Data = count
+	w.WriteHeader(http.StatusOK)
+}
+func (hdl *EmployeeHandler) DeleteEmployeeByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
+	res := &Response{}
+	defer json.NewEncoder(w).Encode(res)
+
+}
+func (hdl *EmployeeHandler) DeleteAllEmployee(w http.ResponseWriter, r *http.Request) {}
