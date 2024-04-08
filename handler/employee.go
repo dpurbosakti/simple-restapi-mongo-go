@@ -165,4 +165,22 @@ func (hdl *EmployeeHandler) DeleteEmployeeByID(w http.ResponseWriter, r *http.Re
 	res.Data = count
 	w.WriteHeader(http.StatusOK)
 }
-func (hdl *EmployeeHandler) DeleteAllEmployee(w http.ResponseWriter, r *http.Request) {}
+func (hdl *EmployeeHandler) DeleteAllEmployee(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
+	res := &Response{}
+	defer json.NewEncoder(w).Encode(res)
+
+	repo := repository.EmployeeRepo{MongoCollection: hdl.MongoCollection}
+
+	count, err := repo.DeleteAllEmployees()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("error: ", err)
+		res.Error = err.Error()
+		return
+	}
+
+	res.Data = count
+	w.WriteHeader(http.StatusOK)
+}
