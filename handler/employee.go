@@ -53,8 +53,35 @@ func (hdl *EmployeeHandler) CreateEmployee(w http.ResponseWriter, r *http.Reques
 
 	log.Println("employee inserted with id ", insertID, emp)
 }
-func (hdl *EmployeeHandler) GetEmployeeByID(w http.ResponseWriter, r *http.Request)    {}
-func (hdl *EmployeeHandler) GetAllEmployee(w http.ResponseWriter, r *http.Request)     {}
+func (hdl *EmployeeHandler) GetEmployeeByID(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-type", "application/json")
+
+	res := &Response{}
+	defer json.NewEncoder(w).Encode(res)
+
+	empID
+
+}
+func (hdl *EmployeeHandler) GetAllEmployee(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "application/json")
+
+	res := &Response{}
+
+	defer json.NewEncoder(w).Encode(res)
+
+	repo := repository.EmployeeRepo{MongoCollection: hdl.MongoCollection}
+
+	emp, err := repo.FindAllEmployees()
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("error:", err)
+		res.Error = err.Error()
+		return
+	}
+
+	res.Data = emp
+	w.WriteHeader(http.StatusOK)
+}
 func (hdl *EmployeeHandler) UpdateEmployee(w http.ResponseWriter, r *http.Request)     {}
 func (hdl *EmployeeHandler) DeleteEmployeeByID(w http.ResponseWriter, r *http.Request) {}
 func (hdl *EmployeeHandler) DeleteAllEmployee(w http.ResponseWriter, r *http.Request)  {}
