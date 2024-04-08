@@ -142,5 +142,27 @@ func (hdl *EmployeeHandler) DeleteEmployeeByID(w http.ResponseWriter, r *http.Re
 	res := &Response{}
 	defer json.NewEncoder(w).Encode(res)
 
+	empID := mux.Vars(r)["id"]
+	log.Println("employee id ", empID)
+
+	if empID == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		log.Println("invalid employee id")
+		res.Error = "invalid employee id"
+		return
+	}
+
+	repo := repository.EmployeeRepo{MongoCollection: hdl.MongoCollection}
+
+	count, err := repo.DeleteEmployeeByID(empID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("error: ", err)
+		res.Error = err.Error()
+		return
+	}
+
+	res.Data = count
+	w.WriteHeader(http.StatusOK)
 }
 func (hdl *EmployeeHandler) DeleteAllEmployee(w http.ResponseWriter, r *http.Request) {}
